@@ -4,10 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.openscience.cache.Cache;
 import org.openscience.cache.s3fifo.S3FifoCache;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class S3FifoCacheTest {
 
@@ -17,13 +14,13 @@ class S3FifoCacheTest {
 
         cache.put("apple", "red");
         cache.put("banana", "yellow");
-        assertEquals("red", cache.get("apple").orElse(null));
-        assertEquals("yellow", cache.get("banana").orElse(null));
-        assertEquals("yellow", cache.get("banana").orElse(null));
-        assertEquals("yellow", cache.get("banana").orElse(null));
+        assertEquals("red", cache.get("apple"));
+        assertEquals("yellow", cache.get("banana"));
+        assertEquals("yellow", cache.get("banana"));
+        assertEquals("yellow", cache.get("banana"));
 
         cache.put("apple", "green");
-        assertEquals("green", cache.get("apple").orElse(null));
+        assertEquals("green", cache.get("apple"));
     }
 
     @Test
@@ -35,7 +32,7 @@ class S3FifoCacheTest {
         }
 
         for (int i = 90; i < 100; i++) {
-            assertEquals("value" + i, cache.get("key" + i).orElse(null));
+            assertEquals("value" + i, cache.get("key" + i));
         }
 
         for (int i = 100; i < 1000; i++) {
@@ -43,7 +40,7 @@ class S3FifoCacheTest {
         }
 
         for (int i = 500; i < 600; i++) {
-            assertEquals(Optional.empty(), cache.get("key" + i));
+            assertNull(cache.get("key" + i));
         }
     }
 
@@ -53,7 +50,7 @@ class S3FifoCacheTest {
 
         for (int i = 0; i < 10; i++) {
             cache.put("key" + i, "value" + i);
-            assertEquals("value" + i, cache.get("key" + i).orElse(null)); //touch
+            assertEquals("value" + i, cache.get("key" + i)); //touch
         }
 
         for (int i = 20; i < 40; i++) {
@@ -61,11 +58,11 @@ class S3FifoCacheTest {
         }
 
         for (int i = 0; i < 10; i++) {
-            assertEquals("value" + i, cache.get("key" + i).orElse(null));
+            assertEquals("value" + i, cache.get("key" + i));
         }
 
         for (int i = 30; i < 40; i++) {
-            assertEquals("value" + i, cache.get("key" + i).orElse(null));
+            assertEquals("value" + i, cache.get("key" + i));
         }
     }
 
@@ -87,7 +84,7 @@ class S3FifoCacheTest {
         }
 
         for (int i = 110; i < 200; i++) {
-            assertEquals("value" + i, cache.get("key" + i).orElse(null));
+            assertEquals("value" + i, cache.get("key" + i));
         }
     }
 
@@ -97,20 +94,20 @@ class S3FifoCacheTest {
 
         for (int i = 0; i < 100; i++) {
             cache.put("key" + i, "value" + i);
-            assertEquals("value" + i, cache.get("key" + i).orElse(null)); //touch
+            assertEquals("value" + i, cache.get("key" + i)); //touch
         }
 
         for (int i = 0; i < 110; i++) {
             cache.put("key" + i, "value" + i);
         }
 
-        assertEquals(Optional.empty(), cache.get("key0"));
+        assertNull(cache.get("key0"));
 
         for (int i = 100; i < 300; i++) {
             cache.put("key" + i, "value" + i);
         }
 
-        assertEquals(Optional.empty(), cache.get("key190"));
+        assertNull(cache.get("key190"));
     }
 
     @Test
@@ -144,7 +141,7 @@ class S3FifoCacheTest {
         }
 
         assertTrue(true);
-        assertEquals(Optional.empty(), cache.get("key110"));
-        assertEquals(Optional.empty(), cache.get("key17"));
+        assertNull(cache.get("key110"));
+        assertNull(cache.get("key17"));
     }
 }

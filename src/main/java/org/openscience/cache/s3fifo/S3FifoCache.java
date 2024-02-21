@@ -74,22 +74,22 @@ public final class S3FifoCache<K, V> implements Cache<K, V> {
     }
 
     /**
-     * Returns a reference to the value to which the specified {@code key} is mapped,
-     * or {@link Optional#empty()} if cache contains no mapping for the {@code key}.
+     * Returns the value to which the specified {@code key} is mapped,
+     * or null if cache contains no mapping for the {@code key}.
      *
      * @param key key with which the specified value is to be associated
      * @throws NullPointerException if the specified {@code key} is null
-     * @return {@link Optional#empty()} or {@link Optional} with reference to the value
+     * @return null or value to which the specified {@code key} is mapped
      */
     @Override
-    public Optional<V> get(K key) {
+    public V get(K key) {
         Objects.requireNonNull(key);
         CacheEntry<K, V> entry = this.entries.get(key);
         if (entry != null) {
             entry.freq().accumulateAndGet(1, (oldVal, inc) -> Math.min(oldVal + inc, MAX_FREQUENCY_LIMIT));
-            return Optional.ofNullable(entry.value());
+            return entry.value();
         } else {
-            return Optional.empty();
+            return null;
         }
     }
 
@@ -98,11 +98,12 @@ public final class S3FifoCache<K, V> implements Cache<K, V> {
      *
      * @param key key with which the specified value is to be associated
      * @param value value to be associated with the specified key
-     * @throws NullPointerException if the specified key is null
+     * @throws NullPointerException if the specified key or value is null
      */
     @Override
     public void put(K key, V value) {
         Objects.requireNonNull(key);
+        Objects.requireNonNull(value);
         evict();
 
         S3FifoCacheEntry<K, V> entry = new S3FifoCacheEntry<>(key, value);
