@@ -4,7 +4,7 @@
   <groupId>org.openscience</groupId>
   <artifactId>s3fifo</artifactId>
   <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0-RELEASE</version>
   <name>s3fifo</name>
 
   <properties>

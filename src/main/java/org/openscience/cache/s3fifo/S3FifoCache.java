@@ -106,7 +106,7 @@ public final class S3FifoCache<K, V> implements Cache<K, V> {
         Objects.requireNonNull(value);
         evict();
 
-        S3FifoCacheEntry<K, V> entry = new S3FifoCacheEntry<>(key, value);
+        CacheEntry<K, V> entry = new S3FifoCacheEntry<>(key, value);
         if (this.ghost.contains(key)) {
             //Move to mainQ
             this.mainQ.offerFirst(entry);
