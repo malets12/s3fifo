@@ -10,9 +10,8 @@ import org.openscience.cache.s3fifo.S3FifoCache;
 //...
 
 int size = 100;
-Cache<String, String> cache = new S3FifoCache<>(size);
-//or use extended constructor if you want to define ghost size manually
-
+Cache<String, String> cache = S3FifoCache.builder().setMaxCacheSize(size).build();
+//or use S3FifoCache.Builder#setMaxGhostSize(int) if you want to define ghost size manually
 cache.set("key1", "value1");
 String value = cache.get("key1"); // value1
 

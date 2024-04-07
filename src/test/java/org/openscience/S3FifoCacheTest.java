@@ -1,5 +1,6 @@
 package org.openscience;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openscience.cache.Cache;
 import org.openscience.cache.s3fifo.S3FifoCache;
@@ -8,10 +9,16 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class S3FifoCacheTest {
 
+    private Cache<String, String> cache;
+
+    @BeforeEach
+    void setUp() {
+        cache = S3FifoCache.builder().setMaxCacheSize(100).build();
+    }
+
     @Test
     void shouldPushAndRead() {
-        Cache<String, String> cache = new S3FifoCache<>(10);
-
+        cache = S3FifoCache.builder().setMaxCacheSize(10).build();
         cache.put("apple", "red");
         cache.put("banana", "yellow");
         assertEquals("red", cache.get("apple"));
@@ -25,8 +32,6 @@ class S3FifoCacheTest {
 
     @Test
     void shouldEvictScale() {
-        Cache<String, String> cache = new S3FifoCache<>(100);
-
         for (int i = 0; i < 100; i++) {
             cache.put("key" + i, "value" + i);
         }
@@ -46,8 +51,6 @@ class S3FifoCacheTest {
 
     @Test
     void shouldProtectTouched() {
-        Cache<String, String> cache = new S3FifoCache<>(100);
-
         for (int i = 0; i < 10; i++) {
             cache.put("key" + i, "value" + i);
             assertEquals("value" + i, cache.get("key" + i)); //touch
@@ -68,8 +71,6 @@ class S3FifoCacheTest {
 
     @Test
     void shouldEvictPart() {
-        Cache<String, String> cache = new S3FifoCache<>(100);
-
         for (int i = 0; i < 200; i++) {
             cache.put("key" + i, "value" + i);
             cache.get("key" + i); //touch
@@ -90,8 +91,6 @@ class S3FifoCacheTest {
 
     @Test
     void shouldMoveToGhost() {
-        Cache<String, String> cache = new S3FifoCache<>(100);
-
         for (int i = 0; i < 100; i++) {
             cache.put("key" + i, "value" + i);
             assertEquals("value" + i, cache.get("key" + i)); //touch
@@ -112,8 +111,6 @@ class S3FifoCacheTest {
 
     @Test
     void shouldGetFromGhostAndReduceGhostSize() {
-        Cache<String, String> cache = new S3FifoCache<>(100);
-
         for (int i = 0; i < 100; i++) {
             cache.put("key" + i, "value" + i);
             cache.get("key" + i);
@@ -140,8 +137,31 @@ class S3FifoCacheTest {
             cache.put("key" + i, "value" + i);
         }
 
-        assertTrue(true);
         assertNull(cache.get("key110"));
         assertNull(cache.get("key17"));
+    }
+
+    @Test
+    void shouldThrow() {
+        assertThrows(IllegalArgumentException.class, () -> S3FifoCache.builder().build());
+        assertThrows(IllegalArgumentException.class, () -> S3FifoCache.builder().setMaxCacheSize(-1).build());
+        assertThrows(IllegalArgumentException.class, () -> S3FifoCache.builder().setMaxGhostSize(100).build());
+        assertThrows(IllegalArgumentException.class, () -> S3FifoCache.builder().setMaxCacheSize(100).setMaxGhostSize(0).build());
+    }
+
+    @Test
+    void shouldAllocateSmallGhost() {
+        cache = S3FifoCache.builder().setMaxCacheSize(100).setMaxGhostSize(1).build();
+        for (int i = 0; i < 100; i++) {
+            cache.put("key" + i, "value" + i);
+        }
+
+        for (int i = 100; i < 102; i++) {
+            cache.put("key" + i, "value" + i);
+        }
+        cache.put("key1", "value1");
+        assertEquals("value3", cache.get("key3"));
+        assertNull(cache.get("key0")); //not in ghost
+        assertNull(cache.get("key2")); //in ghost
     }
 }

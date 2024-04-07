@@ -34,23 +34,14 @@ public final class S3FifoCache<K, V> implements Cache<K, V> {
     private final Deque<K> ghostQ;
     /**
      * Set of evicted entry keys.
-     * Guarantees o(log(n)) access.
+     * Guarantees O(log(n)) access.
      * Primary source of truth about state of ghost.
      */
     private final Set<K> ghost;
     /**
-     * Map of all entries for from smallQ and mainQ.
+     * Map of all entries from smallQ and mainQ.
      */
     private final Map<K, CacheEntry<K, V>> entries;
-
-    /**
-     * Creates a new cache with the given maximum size.
-     *
-     * @param maxCacheSize maximum cache size
-     */
-    public S3FifoCache(int maxCacheSize) {
-        this(maxCacheSize, maxCacheSize - maxCacheSize / 10);
-    }
 
     /**
      * Creates a new cache with the given maximum size.
@@ -60,9 +51,7 @@ public final class S3FifoCache<K, V> implements Cache<K, V> {
      * @throws IllegalArgumentException if the maximum capacity of
      * {@code maxCacheSize} or {@code maxGhostSize} is negative or zero
      */
-    public S3FifoCache(int maxCacheSize, int maxGhostSize) {
-        if (maxCacheSize <= 0 || maxGhostSize <= 0)
-            throw new IllegalArgumentException();
+    private S3FifoCache(int maxCacheSize, int maxGhostSize) {
         this.maxSmallSize = maxCacheSize / 10;
         this.maxMainSize = maxCacheSize - maxSmallSize;
         this.maxGhostSize = maxGhostSize;
@@ -175,5 +164,42 @@ public final class S3FifoCache<K, V> implements Cache<K, V> {
         }
         this.ghostQ.offerFirst(tail.key());
         this.ghost.add(tail.key());
+    }
+
+    public static Builder<Object, Object> builder() {
+        return new Builder<>();
+    }
+
+    public static final class Builder<K, V> {
+        private int maxCacheSize;
+        private int maxGhostSize;
+
+        private Builder() {}
+
+        public Builder<K, V> setMaxCacheSize(int maxCacheSize) {
+            throwIllegalArgumentExceptionWhen(maxCacheSize <= 0);
+            this.maxCacheSize = maxCacheSize;
+            return this;
+        }
+
+        public Builder<K, V> setMaxGhostSize(int maxGhostSize) {
+            throwIllegalArgumentExceptionWhen(maxGhostSize <= 0);
+            this.maxGhostSize = maxGhostSize;
+            return this;
+        }
+
+        public <K1 extends K, V1 extends V> Cache<K1, V1> build() {
+            throwIllegalArgumentExceptionWhen(this.maxCacheSize == 0);
+            if (this.maxGhostSize == 0) {
+                this.maxGhostSize = this.maxCacheSize - this.maxCacheSize / 10;
+            }
+            return new S3FifoCache<>(this.maxCacheSize, this.maxGhostSize);
+        }
+
+        private void throwIllegalArgumentExceptionWhen(boolean condition) {
+            if (condition) {
+                throw new IllegalArgumentException();
+            }
+        }
     }
 }

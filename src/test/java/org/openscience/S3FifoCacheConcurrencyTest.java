@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class S3FifoCacheConcurrencyTest {
     @Test
     void shouldBeVisibleToOtherThreads() {
-        Cache<Integer, String> cache = new S3FifoCache<>(100);
+        Cache<Integer, String> cache = S3FifoCache.builder().setMaxCacheSize(100).build();
         ExecutorService writers = Executors.newFixedThreadPool(20);
         ExecutorService readers = Executors.newFixedThreadPool(20);
 
